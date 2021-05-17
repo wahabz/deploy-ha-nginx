@@ -1,0 +1,41 @@
+---
+  
+version: "3"
+
+services:
+  consul:
+    image: wdijkerman/consul
+    container_name: "consul"
+    hostname: "consul"
+    ports:
+      - "8500:8500"
+    networks:
+      - consul
+    volumes:
+      - ./config/config.json:/consul/config/consul.json
+
+  ngnix-server:
+    image: nginx:1.13
+    ports: 
+      - "8080:80"
+    volumes: 
+      - './config/nginx.conf:/etc/nginx/nginx.conf'
+    networks: 
+      - "consul"
+    links:
+      - consul
+    depends_on: 
+      - consul
+
+  webserver:
+     build: .
+     networks:
+       - consul
+     links:
+       - consul
+     depends_on:
+       - consul
+
+networks:
+  consul:
+    driver: bridge
